@@ -11,7 +11,7 @@ public class YasguiDbpAnalysis extends AnalysisSetup {
 	public YasguiDbpAnalysis() throws IOException {
 		super();
 		this.name = "YASGUI_DBPedia";
-		this.inputTypes = new Input[]{AnalysisSetup.Input.NEW_QUERIES};
+		this.inputTypes = new Input[]{AnalysisSetup.Input.YASGUI_NEW};
 		this.endpointFilters.add(new DbpediaFilter());
 		this.loader = new CsvLoader(this);
 		createDirs();

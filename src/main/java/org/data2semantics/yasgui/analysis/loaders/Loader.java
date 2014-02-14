@@ -9,6 +9,7 @@ import org.data2semantics.query.Query;
 import org.data2semantics.query.filters.QueryFilter;
 import org.data2semantics.yasgui.analysis.filters.EndpointFilter;
 
+import com.hp.hpl.jena.query.QueryBuildException;
 import com.hp.hpl.jena.query.QueryParseException;
 import com.hp.hpl.jena.sparql.expr.ExprException;
 
@@ -82,6 +83,9 @@ public abstract class Loader {
 			collection.getQueryCollection().invalidQueries.increase();
 //			String testString = queryString.replace("#>", "");
 //			if (testString.contains("#")) System.out.println(queryString);
+		} catch (QueryBuildException e) {
+			//e.g. 'duplicate variable in result projection'
+			collection.getQueryCollection().invalidQueries.increase();
 		} catch (ExprException e){
 			//unable to parse regex in query. invalid!
 			collection.getQueryCollection().invalidQueries.increase();

@@ -24,40 +24,50 @@ public class CsvLoader extends Loader {
 
 	
 	public void load(AnalysisSetup.Input inputType) throws IOException {
-		@SuppressWarnings("resource")
-		CSVReader csvReader = new CSVReader(new FileReader(inputType.getInputPath()), ','); 
+		CSVReader csvReader = new CSVReader(new FileReader(inputType.getInputPath()), ',', '"',0); 
 		String[] line;
+		boolean useMetaRow = inputType.getEndpointCol() == inputType.getQueryCol();
+		boolean lineRead = false;
+		int errorCount = 0;
 		while ((line = csvReader.readNext()) != null) {
-			
-			String endpoint = null;
-			if (validColumn(line, inputType.getEndpointCol())) {
-				if(!checkEndpointFilters(line[inputType.getEndpointCol()])) continue;
+			try {
+				lineRead = true;
+				String endpoint = null;
 				
-				if (urlValidator.isValid(line[inputType.getEndpointCol()])) {
-					endpoint = line[inputType.getEndpointCol()];
-					if (inputType.getCountCol() >= 0) {
-						collection.getEndpointCollection().addEndpoint(endpoint, Integer.parseInt(line[inputType.getCountCol()].replace(",","")));
-					} else {
-						collection.getEndpointCollection().addEndpoint(endpoint);
-					}
+				if (validColumn(line, inputType.getEndpointCol()) && (!useMetaRow || line[0].equals("endpoint"))) {
+					if(!checkEndpointFilters(line[inputType.getEndpointCol()])) continue;
 					
-				}
-			}
-			if (validColumn(line, inputType.getQueryCol())) {
-				Query query = getParsedAndFilteredQuery(line[inputType.getQueryCol()]);
-				
-				if (query != null) {
-					int count = Integer.parseInt(line[inputType.getCountCol()]);
-					if (count <= 0) {
-						throw new IOException("count cannot be zero");
+					if (urlValidator.isValid(line[inputType.getEndpointCol()])) {
+						endpoint = line[inputType.getEndpointCol()];
+						if (inputType.getCountCol() >= 0) {
+							collection.getEndpointCollection().addEndpoint(endpoint, Integer.parseInt(line[inputType.getCountCol()].replace(",","").trim()));
+						} else {
+							collection.getEndpointCollection().addEndpoint(endpoint);
+						}
+						
 					}
-					query.setCount(count);
-					if (endpoint != null) query.setEndpoints(endpoint);
-					collection.getQueryCollection().addQuery(query);
+				} 
+				if (validColumn(line, inputType.getQueryCol()) && (!useMetaRow || line[0].equals("query"))) {
+					Query query = getParsedAndFilteredQuery(line[inputType.getQueryCol()]);
+					
+					if (query != null) {
+						int count = Integer.parseInt(line[inputType.getCountCol()]);
+						if (count <= 0) {
+							throw new IOException("count cannot be zero");
+						}
+						query.setCount(count);
+						if (endpoint != null) query.setEndpoints(endpoint);
+						collection.getQueryCollection().addQuery(query);
+					}
 				}
+			} catch (NumberFormatException e) {
+				//hmm, opencsv sees part of the string as the count col, causing a number format exception
+				errorCount++;
 			}
 		}
+		System.out.println("opencsv could not parse " + errorCount + " rows");
 		csvReader.close();
+		if (!lineRead) throw new IllegalStateException("could not read any file for ");
 	}
 	
 	

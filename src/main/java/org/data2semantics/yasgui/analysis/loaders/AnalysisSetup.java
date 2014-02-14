@@ -10,9 +10,9 @@ import org.data2semantics.yasgui.analysis.filters.EndpointFilter;
 
 public abstract class AnalysisSetup {
 	public static enum Input {
-		OLD_QUERIES("input/old_queries.csv", null, -1, 0, 1 ),//column IDs (-1 if column id for this data does not exist)
-		NEW_QUERIES("input/new_logs.csv", null, 0, 1, 2),
-		OLD_ENDPOINTS("input/old_endpoints.csv", null, 0, -1, 1),
+		
+		YASGUI_NEW("input/yasgui_queries_new.csv", null, 0, 1, 2),
+		YASGUI_OLD("input/yasgui_queries_old.csv", null, 1, 1, 2),
 		DBP_QUERIES("input/dbp.log", "cache/dbp.cache", -1, -1, -1),
 		DBP_SNORQL_QUERIES("input/dbp.log", "cache/dbpSnorql.cache", -1, -1, -1);
 		
@@ -28,7 +28,7 @@ public abstract class AnalysisSetup {
 	        this.cachePath = cachePath;
 	        this.inputPath = inputPath;
 	    }
-	   
+	    
 	    public int getQueryCol() {return queryCol;}
 	    public int getEndpointCol() {return endpointCol;}
 	    public int getCountCol() {return countCol;}

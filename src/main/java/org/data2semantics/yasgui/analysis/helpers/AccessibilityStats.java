@@ -11,14 +11,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.data2semantics.yasgui.analysis.Collection;
 import org.data2semantics.yasgui.analysis.EndpointCollection;
 
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
-public class AccessibilityStats extends AnalysisHelper {
-	
-	private HashMap<String, Boolean> accessibilityInfo = new HashMap<String, Boolean>();
+public class AccessibilityStats  {
+	public enum EndpointAccessiblityAnalysis{
+		CKAN_ACCESSIBLE, 
+		CKAN_NOT_ACCESSIBLE, 
+		PROBABLY_INCORRECT, 
+		PRIVATE_ENDPOINT_PUBLIC_DATA, 
+		PRIVATE_ENDPOINT_PRIVATE_DATA
+	};
+	private CkanStats ckanStats;
+	private HashMap<String, EndpointAccessiblityAnalysis> accessibilityInfo = new HashMap<String, EndpointAccessiblityAnalysis>();
 //	public int numAccessibleEndpoints = 0;
 //	public int numInaccessibleEndpoints = 0;
 //	public int numTotalAccessibleEndpoints = 0;
@@ -26,24 +34,28 @@ public class AccessibilityStats extends AnalysisHelper {
 	private static String CACHE_FILE_SEPARATOR = "#@#@";
 	private File cacheFile;
 	private FileWriter cacheFileWriter;
+	private EndpointCollection endpointCollection;
 	public AccessibilityStats(EndpointCollection collection) {
-		super(collection);
+		this.endpointCollection = collection;
+		ckanStats = new CkanStats(collection);
 	}
 	
-	public int getNumEndpoints(boolean getAccessible) {
+	
+	
+	public int getNumEndpoints(EndpointAccessiblityAnalysis getAccessible) {
 		int count = 0;
-		for (Boolean accessible: accessibilityInfo.values()) {
+		for (EndpointAccessiblityAnalysis accessible: accessibilityInfo.values()) {
 			if (accessible == getAccessible) count++;
 		}
 		return count;
 	}
 	
-	public int getNumEndpoints(boolean getAccessible, int minEndpointCount) {
-		HashMap<String, Integer> endpoints = collection.getEndpoints();
+	public int getNumEndpoints(EndpointAccessiblityAnalysis getAccessible, int minEndpointCount) {
+		HashMap<String, Integer> endpoints = endpointCollection.getEndpoints();
 		int count = 0;
-		for (Map.Entry<String, Boolean> entry : accessibilityInfo.entrySet()) {
+		for (Map.Entry<String, EndpointAccessiblityAnalysis> entry : accessibilityInfo.entrySet()) {
 			String endpoint = entry.getKey();
-			Boolean accessible = entry.getValue();
+			EndpointAccessiblityAnalysis accessible = entry.getValue();
 			int endpointCount = endpoints.get(endpoint);
 			if (accessible == getAccessible && endpointCount >= minEndpointCount) {
 				count++;
@@ -53,15 +65,15 @@ public class AccessibilityStats extends AnalysisHelper {
 	}
 	
 	
-	public int getTotalNumEndpoints(boolean getAccessible) {
+	public int getTotalNumEndpoints(EndpointAccessiblityAnalysis getAccessible) {
 		return getTotalNumEndpoints(getAccessible, 0);
 	}
-	public int getTotalNumEndpoints(boolean getAccessible, int minEndpointCount) {
-		HashMap<String, Integer> endpoints = collection.getEndpoints();
+	public int getTotalNumEndpoints(EndpointAccessiblityAnalysis getAccessible, int minEndpointCount) {
+		HashMap<String, Integer> endpoints = endpointCollection.getEndpoints();
 		int count = 0;
-		for (Map.Entry<String, Boolean> entry : accessibilityInfo.entrySet()) {
+		for (Map.Entry<String, EndpointAccessiblityAnalysis> entry : accessibilityInfo.entrySet()) {
 			String endpoint = entry.getKey();
-			Boolean accessible = entry.getValue();
+			EndpointAccessiblityAnalysis accessible = entry.getValue();
 			if (!endpoints.containsKey(endpoint)) {
 				throw new IllegalStateException("Could not find endpoints in our accessiblity list. Probably a stale cache. Delete cache file");
 			}
@@ -71,8 +83,10 @@ public class AccessibilityStats extends AnalysisHelper {
 		return count;
 	}
 	
-	public void calc(String name) throws IOException, ParseException {
-		EndpointCollection endpointCollection = collection;
+	public void calc(String name, Collection collection) throws IOException, ParseException {
+		this.ckanStats.calc(name);
+		
+		
 		cacheFile = new File("cache/endpoint_accessiblity_" + name + ".tmp");
 		if (cacheFile.exists()) {
 			loadCacheFile();
@@ -87,6 +101,7 @@ public class AccessibilityStats extends AnalysisHelper {
 			}
 			cacheFileWriter.close();
 		}
+		
 	}
 	
 	private void loadCacheFile() throws IOException {
@@ -103,13 +118,15 @@ public class AccessibilityStats extends AnalysisHelper {
 			   String endpoint = exploded[0];
 			   boolean accessible = (exploded[1].equals("1")? true: false);
 			   int count = Integer.parseInt(exploded[2]);
+			   
+			   
 			   setAccessibility(endpoint, accessible, count);
 		   }
 		}
 		br.close();
 	}
 	
-	public boolean isAccessible(String endpoint) {
+	public EndpointAccessiblityAnalysis isAccessible(String endpoint) {
 		if (!accessibilityInfo.containsKey(endpoint)) {
 			throw new IllegalStateException("could not find accessibility info for endpoint " + endpoint);
 		}
@@ -131,15 +148,47 @@ public class AccessibilityStats extends AnalysisHelper {
 		cacheFileWriter.write(endpoint + CACHE_FILE_SEPARATOR + (accessible? "1": "0") + CACHE_FILE_SEPARATOR + count + "\n");
 		return accessible;
 	}
+
+	/**
+	 * for each of our endpoints, flag them as such:
+	 * - when it is in ckan, flag ckan
+	 * - when it is not in ckan, but accessible, flag as not_ckan_but_accessible
+	 * - when it is not in ckan, not accessible, but only used once, flag as probably_incorrect_endpoint
+	 * - when it is not in ckan, not accessible, used more than once, and only contains prefixes from prefix.cc, flag as private_endpoint_public_data
+	 * - when it is not in ckan, not accessible, used more than once, and contains unknown prefies, flag as private_endpoint_private_data
+	 */
 	private void setAccessibility(String endpoint, boolean accessible, int count) {
-		accessibilityInfo.put(endpoint, accessible);
-		
+		EndpointAccessiblityAnalysis accessibleStatus;
+		if (accessible) {
+			if (ckanStats.isInCkan(endpoint)) {
+				accessibleStatus = EndpointAccessiblityAnalysis.CKAN_ACCESSIBLE;
+			} else {
+				accessibleStatus = EndpointAccessiblityAnalysis.CKAN_NOT_ACCESSIBLE;
+			}
+		} else {
+			if (count <= 1) {
+				accessibleStatus = EndpointAccessiblityAnalysis.PROBABLY_INCORRECT;
+			} else {
+				if (endpointQueriesContainCommonPrefixes(endpoint)) {
+					accessibleStatus = EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PUBLIC_DATA;
+				} else {
+					accessibleStatus = EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PRIVATE_DATA;
+				}
+			}
+		}
+		accessibilityInfo.put(endpoint, accessibleStatus);
 	}
 	
+	private boolean endpointQueriesContainCommonPrefixes(String endpoint) {
+		System.out.println("TODOO");
+		return true;
+	}
+
 	
 	
 	public static void main(String[] args) throws IOException, ParseException {
 		AccessibilityStats ea = new AccessibilityStats(new EndpointCollection());
 		ea.checkAccessibility("http://mac311.few.vu.nl:8000/openrdf-sesame/nci", 2);
 	}
+
 }

@@ -2,7 +2,6 @@ package org.data2semantics.yasgui.analysis.helpers;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,14 +11,14 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
-public class CkanStats extends AnalysisHelper {
+public class CkanStats  {
 	
 	private HashMap<String, Integer> ckanEndpoints;
 	
 	
-	ArrayList<String> mondecaEndpoints = new ArrayList<String>();
+	private EndpointCollection collection;
 	public CkanStats(EndpointCollection collection) {
-		super(collection);
+		this.collection = collection;
 	}
 	
 	public int getEndpointsSize() {

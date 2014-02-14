@@ -15,15 +15,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats;
-import org.data2semantics.yasgui.analysis.helpers.CkanStats;
+import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats.EndpointAccessiblityAnalysis;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class EndpointCollection {
-	
+//	
 	private HashMap<String, Integer> endpoints = new HashMap<String, Integer>();
-	private CkanStats ckanStats = new CkanStats(this);
+	
+//	private CkanStats ckanStats = new CkanStats(this);
 	private AccessibilityStats accessibilityStats = new AccessibilityStats(this);
+	
 	public EndpointCollection() {
 		
 	}
@@ -73,10 +75,12 @@ public class EndpointCollection {
 		}
 		return count;
 	}
-	public void calcAggregatedStats(String name) throws IOException, ParseException {
-		this.ckanStats.calc(name);
-		this.accessibilityStats.calc(name);
+	public void calcAggregatedStats(String name, Collection collection) throws IOException, ParseException {
+//		this.ckanStats.calc(name);
+		this.accessibilityStats.calc(name, collection);
 	}
+	
+	
 	
 	public String toString() {
 		return "total endpoint count: " + getTotalCount() + " distinct endpoint count: " + getEndpoints().size();
@@ -117,19 +121,19 @@ public class EndpointCollection {
 		
 		CSVWriter writer = new CSVWriter(new FileWriter(csvFile), ';');
 		writer.writeNext(new String[]{name});
-		writer.writeNext(new String[]{"Endpoint", "#queries", "is in ckan catalogue", "is accessible"});
+		writer.writeNext(new String[]{"Endpoint", "#queries", "accessibilityStatus"});
 		
 		Map<String, Integer> endpoints = getOrderedEndpoints();
 		for (Entry<String, Integer> entry : endpoints.entrySet()) {
 			String endpoint = entry.getKey();
-			writeElaborareStatsRow(writer, endpoint, entry.getValue(), ckanStats.isInCkan(endpoint), accessibilityStats.isAccessible(endpoint));
+			writeElaborareStatsRow(writer, endpoint, entry.getValue(), accessibilityStats.isAccessible(endpoint));
 		}
 		
 		writer.close();
 	}
 	
-	private void writeElaborareStatsRow(CSVWriter writer, String endpoint, int count, boolean isCkanEndpoint, boolean accessible) {
-		writer.writeNext(new String[]{endpoint, Integer.toString(count), (ckanStats.isInCkan(endpoint)? "1": "0"), (accessibilityStats.isAccessible(endpoint)? "1": "0")});
+	private void writeElaborareStatsRow(CSVWriter writer, String endpoint, int count, EndpointAccessiblityAnalysis accessible) {
+		writer.writeNext(new String[]{endpoint, Integer.toString(count), accessible.toString()});
 	}
 	
 	private void toSimpleStatsCsv(String name) throws IOException {
@@ -140,12 +144,13 @@ public class EndpointCollection {
 		
 		writeSimpleStatsRow(writer, "Number of endpoints", endpoints.size(), getTotalCount());
 		writeSimpleStatsRow(writer, "Number of (>1 query) endpoints", getEndpoints(2).size(), getTotalCount(2));
-		writeSimpleStatsRow(writer, "Number of ckan endpoints", ckanStats.getEndpointsSize(), ckanStats.getTotalEndpointsSize());
-		writeSimpleStatsRow(writer, "Number of ckan (>1 query) endpoints", ckanStats.getEndpointsSize(2), ckanStats.getTotalEndpointsSize(2));
-		writeSimpleStatsRow(writer, "Number of inaccessible endpoints", accessibilityStats.getNumEndpoints(false), accessibilityStats.getTotalNumEndpoints(false));
-		writeSimpleStatsRow(writer, "Number of inaccessible (>1 query) endpoints", accessibilityStats.getNumEndpoints(false,  2), accessibilityStats.getTotalNumEndpoints(false,  2));
-		writeSimpleStatsRow(writer, "Number of accessible endpoints", accessibilityStats.getNumEndpoints(true), accessibilityStats.getTotalNumEndpoints(true));
-		writeSimpleStatsRow(writer, "Number of accessible (>1 query) endpoints", accessibilityStats.getNumEndpoints(true,  2), accessibilityStats.getTotalNumEndpoints(true,  2));
+		
+		
+		writeSimpleStatsRow(writer, "Number of accessible ckan endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.CKAN_ACCESSIBLE), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.CKAN_ACCESSIBLE));
+		writeSimpleStatsRow(writer, "Number of inaccessible endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.CKAN_NOT_ACCESSIBLE), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.CKAN_NOT_ACCESSIBLE));
+		writeSimpleStatsRow(writer, "Number of probably incorrect endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.PROBABLY_INCORRECT), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.PROBABLY_INCORRECT));
+		writeSimpleStatsRow(writer, "Number of private endpoints with public data", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PUBLIC_DATA), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PUBLIC_DATA));
+		writeSimpleStatsRow(writer, "Number of private endpoints with private data", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PRIVATE_DATA), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PRIVATE_DATA));
 		writer.close();
 	}
 	
