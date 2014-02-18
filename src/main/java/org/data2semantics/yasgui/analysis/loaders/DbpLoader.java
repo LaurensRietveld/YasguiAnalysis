@@ -5,11 +5,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.ArrayList;
-import org.data2semantics.query.Query;
+
+import org.data2semantics.yasgui.analysis.Query;
 import org.data2semantics.yasgui.analysis.helpers.Helper;
 
 public class DbpLoader extends Loader {
@@ -93,10 +95,10 @@ public class DbpLoader extends Loader {
 	
 
 	
-	public static void main(String[] args) throws IOException, ParseException {
+	public static void main(String[] args) throws IOException, ParseException, URISyntaxException {
 		DbpLoader loader = new DbpLoader(new DBPediaAnalysis());
 //		loader.setQueryFilters(new SimpleBgpFilter());
-		loader.load(true);
+		loader.load(true, false);
 		System.out.println(loader.getCollection().getQueryCollection().toString());
 		System.out.println(loader.getCollection().getEndpointCollection().toString());
 		

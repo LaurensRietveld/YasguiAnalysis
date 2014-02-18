@@ -1,11 +1,12 @@
 package org.data2semantics.yasgui.analysis.loaders;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
 import org.data2semantics.yasgui.analysis.Collection;
-import org.data2semantics.query.Query;
+import org.data2semantics.yasgui.analysis.Query;
 import org.data2semantics.query.filters.QueryFilter;
 import org.data2semantics.yasgui.analysis.filters.EndpointFilter;
 
@@ -32,12 +33,12 @@ public abstract class Loader {
 	}
 	
 	public abstract void load(AnalysisSetup.Input inputType) throws IOException;
-	public void load(boolean bypassCache) throws IOException, ParseException {
+	public void load(boolean bypassCache, boolean expensive) throws IOException, ParseException, URISyntaxException {
 		this.bypassCache = bypassCache;
 		for (AnalysisSetup.Input inputType: analysisSetup.getInputTypes()) {
 			load(inputType);
 		}
-		collection.calcAggregatedStats();
+		collection.calcAggregatedStats(expensive);
 	}
 	public Collection getCollection() {
 		return this.collection;

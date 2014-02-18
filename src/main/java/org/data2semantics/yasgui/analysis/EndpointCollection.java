@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats;
-import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats.EndpointAccessiblityAnalysis;
+import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats.EndpointAccessiblityStatus;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -23,14 +23,25 @@ public class EndpointCollection {
 //	
 	private HashMap<String, Integer> endpoints = new HashMap<String, Integer>();
 	
-//	private CkanStats ckanStats = new CkanStats(this);
-	private AccessibilityStats accessibilityStats = new AccessibilityStats(this);
+	private AccessibilityStats accessibilityStats;
 	
-	public EndpointCollection() {
-		
+	public EndpointCollection(Collection collection) {
+		accessibilityStats = new AccessibilityStats(this, collection);
 	}
-	
-	
+	public AccessibilityStats getAccessibilityStats() {
+		return this.accessibilityStats;
+	}
+	public HashMap<String, Integer> getEndpointForDomain(String domain) {
+		HashMap<String, Integer> foundEndpoint = null;
+		for (String endpoint: endpoints.keySet()) {
+			if (endpoint.contains(domain)) {
+				foundEndpoint = new HashMap<String, Integer>();
+				foundEndpoint.put(endpoint, endpoints.get(endpoint));
+				break;
+			}
+		}
+		return foundEndpoint;
+	}
 	public void addEndpoint(String endpoint) {
 		addEndpoint(endpoint, 1);
 	}
@@ -75,9 +86,9 @@ public class EndpointCollection {
 		}
 		return count;
 	}
-	public void calcAggregatedStats(String name, Collection collection) throws IOException, ParseException {
+	public void calcAggregatedStats(String name) throws IOException, ParseException {
 //		this.ckanStats.calc(name);
-		this.accessibilityStats.calc(name, collection);
+		this.accessibilityStats.calc(name);
 	}
 	
 	
@@ -126,13 +137,13 @@ public class EndpointCollection {
 		Map<String, Integer> endpoints = getOrderedEndpoints();
 		for (Entry<String, Integer> entry : endpoints.entrySet()) {
 			String endpoint = entry.getKey();
-			writeElaborareStatsRow(writer, endpoint, entry.getValue(), accessibilityStats.isAccessible(endpoint));
+			writeElaborareStatsRow(writer, endpoint, entry.getValue(), accessibilityStats.getAccessibleStatus(endpoint));
 		}
 		
 		writer.close();
 	}
 	
-	private void writeElaborareStatsRow(CSVWriter writer, String endpoint, int count, EndpointAccessiblityAnalysis accessible) {
+	private void writeElaborareStatsRow(CSVWriter writer, String endpoint, int count, EndpointAccessiblityStatus accessible) {
 		writer.writeNext(new String[]{endpoint, Integer.toString(count), accessible.toString()});
 	}
 	
@@ -146,11 +157,11 @@ public class EndpointCollection {
 		writeSimpleStatsRow(writer, "Number of (>1 query) endpoints", getEndpoints(2).size(), getTotalCount(2));
 		
 		
-		writeSimpleStatsRow(writer, "Number of accessible ckan endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.CKAN_ACCESSIBLE), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.CKAN_ACCESSIBLE));
-		writeSimpleStatsRow(writer, "Number of inaccessible endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.CKAN_NOT_ACCESSIBLE), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.CKAN_NOT_ACCESSIBLE));
-		writeSimpleStatsRow(writer, "Number of probably incorrect endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.PROBABLY_INCORRECT), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.PROBABLY_INCORRECT));
-		writeSimpleStatsRow(writer, "Number of private endpoints with public data", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PUBLIC_DATA), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PUBLIC_DATA));
-		writeSimpleStatsRow(writer, "Number of private endpoints with private data", accessibilityStats.getNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PRIVATE_DATA), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityAnalysis.PRIVATE_ENDPOINT_PRIVATE_DATA));
+		writeSimpleStatsRow(writer, "Number of accessible ckan endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityStatus.CKAN_ACCESSIBLE), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityStatus.CKAN_ACCESSIBLE));
+		writeSimpleStatsRow(writer, "Number of accessible endpoints not in ckan", accessibilityStats.getNumEndpoints(EndpointAccessiblityStatus.NOT_CKAN_BUT_ACCESSIBLE), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityStatus.NOT_CKAN_BUT_ACCESSIBLE));
+		writeSimpleStatsRow(writer, "Number of probably incorrect endpoints", accessibilityStats.getNumEndpoints(EndpointAccessiblityStatus.PROBABLY_INCORRECT), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityStatus.PROBABLY_INCORRECT));
+		writeSimpleStatsRow(writer, "Number of private endpoints with public data", accessibilityStats.getNumEndpoints(EndpointAccessiblityStatus.PRIVATE_ENDPOINT_PUBLIC_DATA), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityStatus.PRIVATE_ENDPOINT_PUBLIC_DATA));
+		writeSimpleStatsRow(writer, "Number of private endpoints with private data", accessibilityStats.getNumEndpoints(EndpointAccessiblityStatus.PRIVATE_ENDPOINT_PRIVATE_DATA), accessibilityStats.getTotalNumEndpoints(EndpointAccessiblityStatus.PRIVATE_ENDPOINT_PRIVATE_DATA));
 		writer.close();
 	}
 	

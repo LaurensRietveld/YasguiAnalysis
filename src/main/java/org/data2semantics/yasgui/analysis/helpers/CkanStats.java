@@ -108,7 +108,7 @@ public class CkanStats  {
 	}
 	
 	public static void main(String[] args) throws IOException, ParseException {
-		CkanStats ea = new CkanStats(new EndpointCollection());
-		ea.calc("test");
+//		CkanStats ea = new CkanStats(new EndpointCollection());
+//		ea.calc("test");
 	}
 }

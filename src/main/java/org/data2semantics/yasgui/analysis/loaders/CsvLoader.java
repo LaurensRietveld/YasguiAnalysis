@@ -2,10 +2,12 @@ package org.data2semantics.yasgui.analysis.loaders;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 
 import org.apache.commons.validator.routines.UrlValidator;
-import org.data2semantics.query.Query;
+import org.data2semantics.yasgui.analysis.Query;
+
 import au.com.bytecode.opencsv.CSVReader;
 
 
@@ -74,10 +76,10 @@ public class CsvLoader extends Loader {
 
 	
 	
-	public static void main(String[] args) throws IOException, ParseException {
+	public static void main(String[] args) throws IOException, ParseException, URISyntaxException {
 		CsvLoader loader = new CsvLoader(new YasguiAnalysis());
 //		loader.setQueryFilters(new SimpleBgpFilter());
-		loader.load(true);
+		loader.load(true, false);
 		System.out.println(loader.getCollection().getQueryCollection().toString());
 		System.out.println(loader.getCollection().getEndpointCollection().toString());
 		
