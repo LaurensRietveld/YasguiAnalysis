@@ -11,5 +11,4 @@ public class DBPediaAnalysis extends AnalysisSetup {
 		this.loader = new DbpLoader(this);
 		createDirs();
 	}
-
  }

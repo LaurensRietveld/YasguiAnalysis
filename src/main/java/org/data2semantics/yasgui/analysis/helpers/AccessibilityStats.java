@@ -79,7 +79,7 @@ public class AccessibilityStats  {
 			String endpoint = entry.getKey();
 			EndpointAccessiblityStatus accessible = entry.getValue();
 			if (!endpoints.containsKey(endpoint)) {
-				throw new IllegalStateException("Could not find endpoints in our accessiblity list. Probably a stale cache. Delete cache file");
+				throw new IllegalStateException("Could not find " + endpoint + " in our accessiblity list. Probably a stale cache. Delete cache file");
 			}
 			int endpointCount = endpoints.get(endpoint);
 			if (accessible == getAccessible && endpointCount >= minEndpointCount) count += endpointCount;

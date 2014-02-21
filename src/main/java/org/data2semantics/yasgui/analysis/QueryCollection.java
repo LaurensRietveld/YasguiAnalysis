@@ -12,6 +12,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats.EndpointAccessiblityStatus;
+import org.data2semantics.yasgui.query.helpers.Counter;
+
+import au.com.bytecode.opencsv.CSVWriter;
 
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
@@ -21,7 +24,9 @@ import com.hp.hpl.jena.sparql.engine.http.QueryExceptionHTTP;
 
 public class QueryCollection<E extends Query> extends org.data2semantics.query.QueryCollection<E> {
 	private Collection collection;
-
+	private boolean queryOptimizationTestExecuted = false;
+	private Counter optionalNeededCount = new Counter();
+	private Counter optionalNeededCountDistinct = new Counter();
 	public QueryCollection(Collection collection) throws IOException {
 		super();
 		this.collection = collection;
@@ -59,29 +64,75 @@ public class QueryCollection<E extends Query> extends org.data2semantics.query.Q
 		return normalizedNamespaces;
 	}
 	
-	public void calcExpensiveStats() {
+	public void calcOptionalOptimizationTest() throws IOException {
+		queryOptimizationTestExecuted  = true;
 		calcOptionalOptimizationStats();
 	}
 	
 	public String[] getDetailedInfoForQuery(E query) {
 		String[] detailedInfo = super.getDetailedInfoForQuery(query);
-		List<String> list = new LinkedList<String>(Arrays.asList(detailedInfo));
-		String val = "-1";
-		if (query.optionalNeeded != null) {
-			val = query.optionalNeeded? "0": "1";
+		
+		if (queryOptimizationTestExecuted) {
+			List<String> list = new LinkedList<String>(Arrays.asList(detailedInfo));
+			String val = "-1";
+			if (query.optionalNeeded != null) {
+				val = query.optionalNeeded? "1": "0";
+			}
+			list.add(val);
+			detailedInfo = list.toArray(new String[list.size()]);
 		}
-		list.add(val);
-		return list.toArray(new String[list.size()]);
+		return detailedInfo;
 	}
 	public String[] getDetailedInfoHeader() {
 		String[] detailedInfo = super.getDetailedInfoHeader();
-		List<String> list = new LinkedList<String>(Arrays.asList(detailedInfo));
-		list.add("uses not required optional (slow)");
-		return list.toArray(new String[list.size()]);
+		if (queryOptimizationTestExecuted) {
+			List<String> list = new LinkedList<String>(Arrays.asList(detailedInfo));
+			list.add("uses required optional (slow)");
+			detailedInfo = list.toArray(new String[list.size()]);
+		}
+		return detailedInfo;
 	}
 	
+	public void calcAggregatedStats() throws IOException {
+		System.out.println("calc aggregated query stats");
+		super.calcAggregatedStats();
+		if (queryOptimizationTestExecuted) {
+			for (E query: queries.values()) {
+				if (query.optionalNeeded != null && query.optionalNeeded == true) {
+					optionalNeededCountDistinct.increase();
+					optionalNeededCount.add(query.getCount());
+				}
+			}
+		}
+	}
 	
-	private void calcOptionalOptimizationStats() {
+	public int getQueryCountWithOptionalNeededAnalysis(boolean distinct) {
+		System.out.println("get optional needed q count");
+		int count = 0;
+		for (E query: queries.values()) {
+			if (query.optionalNeeded != null) {
+				if (distinct) {
+					count++;
+				} else {
+					count += query.getCount();
+				}
+			}
+		}
+		return count;
+	}
+	
+	public void writeSummaryCsvRows(CSVWriter writer) {
+		super.writeSummaryCsvRows(writer);
+		if (queryOptimizationTestExecuted) {
+			writeCsvRow(writer,"uses required optional (relative to other queries with optionals)", optionalNeededCountDistinct, getQueryCountWithOptionalNeededAnalysis(true), optionalNeededCount, getQueryCountWithOptionalNeededAnalysis(false));
+		}
+	}
+	private void calcOptionalOptimizationStats() throws IOException {
+		System.out.println("calculating optional optimization stats");
+		
+		System.out.println("querying ops live!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		int needOptionalCount = 0;
+		int checkOptionalCount = 0;
 		for (E query: queries.values()) {
 			
 			//we only want to test queries for endpoints we can reach
@@ -100,12 +151,20 @@ public class QueryCollection<E extends Query> extends org.data2semantics.query.Q
 					try {
 						//execute the query, and see whether the number of bindings differ between query solutions. 
 						//If they dont, then we wouldnt need the optionals!
-						QueryExecution queryExecution = QueryExecutionFactory.sparqlService(endpoint, query);
+						
+						endpoint = "http://ops.few.vu.nl:8890/sparql";
+						
+						QueryExecution queryExecution = QueryExecutionFactory.sparqlService(endpoint, query.getQueryWithFromClause("http://dbpedia"));
 						ResultSet result = queryExecution.execSelect();
 						List<String> vars = result.getResultVars();
 						Integer previousNumBindings = null;
 						boolean optionalNeeded = false;
+						boolean firstResults = true;
 						while (result.hasNext()) {
+							if (firstResults) {
+								checkOptionalCount++;
+								firstResults = false;
+							}
 							int numBindingsInQs = 0;
 							QuerySolution solution = result.next();
 							for (String var: vars) {
@@ -116,13 +175,15 @@ public class QueryCollection<E extends Query> extends org.data2semantics.query.Q
 								previousNumBindings = numBindingsInQs;
 							} else if (previousNumBindings != numBindingsInQs) {
 								//different number of bindings. We need the optional
+								needOptionalCount++;
 								optionalNeeded = true;
 								break;
 							}
 						}
 						query.setOptionalNeeded(optionalNeeded);
 					} catch (QueryExceptionHTTP e) {
-						System.out.println(e.getClass().getName());
+//						System.out.println(e.getClass().getName());
+						System.out.println(e.getMessage());
 						//hmph. just ignore. can be cases where query execution takes a long time and stuff
 					}
 					
@@ -130,5 +191,7 @@ public class QueryCollection<E extends Query> extends org.data2semantics.query.Q
 				}
 			}
 		}
+		System.out.println("" + needOptionalCount);
+		System.out.println("" + checkOptionalCount);
 	}
 }

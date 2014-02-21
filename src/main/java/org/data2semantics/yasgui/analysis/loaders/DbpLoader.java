@@ -98,7 +98,7 @@ public class DbpLoader extends Loader {
 	public static void main(String[] args) throws IOException, ParseException, URISyntaxException {
 		DbpLoader loader = new DbpLoader(new DBPediaAnalysis());
 //		loader.setQueryFilters(new SimpleBgpFilter());
-		loader.load(true, false);
+		loader.load(true, false, false);
 		System.out.println(loader.getCollection().getQueryCollection().toString());
 		System.out.println(loader.getCollection().getEndpointCollection().toString());
 		

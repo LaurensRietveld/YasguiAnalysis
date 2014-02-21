@@ -17,9 +17,6 @@ import java.util.Set;
 
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats.EndpointAccessiblityStatus;
 
-import com.google.common.collect.Sets;
-import com.hp.hpl.jena.sparql.pfunction.library.blankNode;
-
 import au.com.bytecode.opencsv.CSVWriter;
 
 
@@ -56,24 +53,27 @@ public class Collection {
 	}
 	
 	
-	public void toCsv() throws IOException {
+	public void toCsv() throws IOException, URISyntaxException {
 		queryCollection.toCsv(name);
 		endpointCollection.toCsv(name);
-	}
-	
-	
-	
-	public void calcAggregatedStats(boolean expensive) throws IOException, ParseException, URISyntaxException {
-		queryCollection.calcAggregatedStats();
-		endpointCollection.calcAggregatedStats(name);
 		generateLodPictureCsvLinkingNamespacesToEndpoints();
 		generateLodPictureCsvGroupingNamespaces();
 		generateLodPictureCsvLinkingNsAndEndpointsAsVertices();
 		generateLodPictureCsvOnlyNamespaces();
-		if (expensive)	queryCollection.calcExpensiveStats();
 	}
 	
 	
+	
+	public void calcAggregatedStats(boolean runOptionalOptimizationTest, boolean runCoverageAnalysis) throws IOException, ParseException {
+		endpointCollection.calcAggregatedStats(name);
+		if (runOptionalOptimizationTest)	queryCollection.calcOptionalOptimizationTest();
+		if (runCoverageAnalysis) endpointCollection.runCoverageAnalysis(this);
+		queryCollection.calcAggregatedStats();
+	}
+	
+	
+
+
 
 	private boolean includeEndpointInLodPicture(String endpoint) {
 		int minNumQueries = 10;
@@ -129,7 +129,7 @@ public class Collection {
 	 */
 	private void generateLodPictureCsvLinkingNsAndEndpointsAsVertices() throws URISyntaxException, IOException {
 		CSVWriter endpointEdgeWriter = new CSVWriter(new FileWriter(new File(Collection.PATH_CSV_RESULTS + name + "/lod_edgeListEndpoints2Ns.csv")), ';');
-		double threshold = 0.6;
+		double threshold = 0.0;
 		
 		for (String endpoint: endpointCollection.getEndpoints().keySet()) {
 			if (includeEndpointInLodPicture(endpoint)) {
@@ -171,7 +171,7 @@ public class Collection {
 		}
 		
 		//now create mappings between endpoints (undirected!)
-		double threshold = 0.5;
+		double threshold = 0.0;
 		Map<String, String> edgeList = new HashMap<String, String>();
 		for (Entry<String, HashMap<String, Double>> entry: prefixDistPerEndpoint.entrySet()) {
 			String endpoint = entry.getKey();

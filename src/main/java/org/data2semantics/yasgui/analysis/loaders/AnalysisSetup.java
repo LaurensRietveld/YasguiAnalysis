@@ -13,7 +13,8 @@ public abstract class AnalysisSetup {
 		
 		YASGUI_NEW("input/yasgui_queries_new.csv", null, 0, 1, 2),
 		YASGUI_OLD("input/yasgui_queries_old.csv", null, 1, 1, 2),
-		DBP_QUERIES("input/dbp.log", "cache/dbp.cache", -1, -1, -1),
+//		DBP_QUERIES("input/dbp.log", "cache/dbp.cache", -1, -1, -1),
+		DBP_QUERIES("input/dbp.55.log", "cache/dbp.cache", -1, -1, -1),
 		DBP_SNORQL_QUERIES("input/dbp.log", "cache/dbpSnorql.cache", -1, -1, -1);
 		
 		private int endpointCol = 0;

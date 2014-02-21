@@ -7,12 +7,14 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats;
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats.EndpointAccessiblityStatus;
@@ -22,7 +24,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 public class EndpointCollection {
 //	
 	private HashMap<String, Integer> endpoints = new HashMap<String, Integer>();
-	
+	private HashMap<String, Integer> endpointTriplesUsed = null;
 	private AccessibilityStats accessibilityStats;
 	
 	public EndpointCollection(Collection collection) {
@@ -88,6 +90,7 @@ public class EndpointCollection {
 	}
 	public void calcAggregatedStats(String name) throws IOException, ParseException {
 //		this.ckanStats.calc(name);
+		System.out.println("calc aggregated endpoint stats");
 		this.accessibilityStats.calc(name);
 	}
 	
@@ -132,19 +135,21 @@ public class EndpointCollection {
 		
 		CSVWriter writer = new CSVWriter(new FileWriter(csvFile), ';');
 		writer.writeNext(new String[]{name});
-		writer.writeNext(new String[]{"Endpoint", "#queries", "accessibilityStatus"});
+		
+		writer.writeNext(new String[]{"Endpoint", "#queries", "accessibilityStatus", "triplesUsed"});
 		
 		Map<String, Integer> endpoints = getOrderedEndpoints();
 		for (Entry<String, Integer> entry : endpoints.entrySet()) {
 			String endpoint = entry.getKey();
-			writeElaborareStatsRow(writer, endpoint, entry.getValue(), accessibilityStats.getAccessibleStatus(endpoint));
+			writeElaborareStatsRow(writer, endpoint, entry.getValue());
 		}
 		
 		writer.close();
 	}
 	
-	private void writeElaborareStatsRow(CSVWriter writer, String endpoint, int count, EndpointAccessiblityStatus accessible) {
-		writer.writeNext(new String[]{endpoint, Integer.toString(count), accessible.toString()});
+	private void writeElaborareStatsRow(CSVWriter writer, String endpoint, int count) {
+		String triplesNeeded = (endpointTriplesUsed != null && endpointTriplesUsed.containsKey(endpoint)? endpointTriplesUsed.get(endpoint).toString(): "");
+		writer.writeNext(new String[]{endpoint, Integer.toString(count), accessibilityStats.getAccessibleStatus(endpoint).toString(), triplesNeeded});
 	}
 	
 	private void toSimpleStatsCsv(String name) throws IOException {
@@ -168,7 +173,28 @@ public class EndpointCollection {
 	private void writeSimpleStatsRow(CSVWriter writer, String analysis, int distinctEndpoints, int overallCount) {
 		writer.writeNext(new String[]{analysis, Integer.toString(distinctEndpoints), Integer.toString(overallCount)});
 	}
-	
-	public static void main(String[] args) {
+	public void runCoverageAnalysis(Collection collection) throws IOException {
+		System.out.println("running query coverage analysis (is expensive)");
+		endpointTriplesUsed = new HashMap<String,Integer>();
+		int endpointCount = 0;
+		int totalEndpointCount = getEndpoints().size();
+		for (String endpoint: getEndpoints().keySet()) {
+			endpointCount++;
+			System.out.println("endpoint: " + endpointCount + "/" + totalEndpointCount);
+			EndpointAccessiblityStatus status = collection.getEndpointCollection().getAccessibilityStats().getAccessibleStatus(endpoint);
+			if (status != EndpointAccessiblityStatus.CKAN_ACCESSIBLE && status != EndpointAccessiblityStatus.NOT_CKAN_BUT_ACCESSIBLE) {
+				continue;
+			}
+			
+			int totalQueryCount = collection.getQueryCollection().getQueries(endpoint).size();
+			int queryCount = 0;
+			Set<String> triplesUsedInEndpoint = new HashSet<String>();
+			for (Query query: collection.getQueryCollection().getQueries(endpoint)) {
+				queryCount++;
+				System.out.println("query: " + queryCount + "/" + totalQueryCount);
+				triplesUsedInEndpoint.addAll(query.getUsedTriplesFromConstruct(endpoint));
+			}
+			endpointTriplesUsed.put(endpoint, triplesUsedInEndpoint.size());
+		}
 	}
 }

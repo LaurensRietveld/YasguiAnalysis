@@ -33,12 +33,12 @@ public abstract class Loader {
 	}
 	
 	public abstract void load(AnalysisSetup.Input inputType) throws IOException;
-	public void load(boolean bypassCache, boolean expensive) throws IOException, ParseException, URISyntaxException {
+	public void load(boolean bypassCache, boolean runOptionalOptimizationTest, boolean runCoverageAnalysis) throws IOException, ParseException, URISyntaxException {
 		this.bypassCache = bypassCache;
 		for (AnalysisSetup.Input inputType: analysisSetup.getInputTypes()) {
 			load(inputType);
 		}
-		collection.calcAggregatedStats(expensive);
+		collection.calcAggregatedStats(runOptionalOptimizationTest, runCoverageAnalysis);
 	}
 	public Collection getCollection() {
 		return this.collection;

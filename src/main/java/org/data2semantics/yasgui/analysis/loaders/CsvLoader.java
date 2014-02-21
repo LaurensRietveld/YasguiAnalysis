@@ -50,6 +50,9 @@ public class CsvLoader extends Loader {
 					}
 				} 
 				if (validColumn(line, inputType.getQueryCol()) && (!useMetaRow || line[0].equals("query"))) {
+					if (line[inputType.getQueryCol()].toLowerCase().contains("insert")) {
+						lineRead = true;
+					}
 					Query query = getParsedAndFilteredQuery(line[inputType.getQueryCol()]);
 					
 					if (query != null) {
@@ -65,6 +68,9 @@ public class CsvLoader extends Loader {
 			} catch (NumberFormatException e) {
 				//hmm, opencsv sees part of the string as the count col, causing a number format exception
 				errorCount++;
+//				System.out.println("---");
+//				System.out.println(line[inputType.getQueryCol()]);
+//				System.out.println("---");
 			}
 		}
 		System.out.println("opencsv could not parse " + errorCount + " rows");
@@ -77,11 +83,18 @@ public class CsvLoader extends Loader {
 	
 	
 	public static void main(String[] args) throws IOException, ParseException, URISyntaxException {
-		CsvLoader loader = new CsvLoader(new YasguiAnalysis());
+		Query query = Query.create("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+				"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+				"PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + 
+				"\n" + 
+				"\n" + 
+				"INSERT { ?x rdfs:label ?lbl. ?x foaf:depiction ?dep. } \n" + 
+				"where { GRAPH <http://example.org/people> {<http://dbpedia.org/resource/University_of_Southern_California> ?y ?x. OPTIONAL{?x rdfs:label ?lbl.} OPTIONAL{?x foaf:depiction ?dep.}} }");
+//		CsvLoader loader = new CsvLoader(new YasguiAnalysis());
 //		loader.setQueryFilters(new SimpleBgpFilter());
-		loader.load(true, false);
-		System.out.println(loader.getCollection().getQueryCollection().toString());
-		System.out.println(loader.getCollection().getEndpointCollection().toString());
+//		loader.load(true, false);
+//		System.out.println(loader.getCollection().getQueryCollection().toString());
+//		System.out.println(loader.getCollection().getEndpointCollection().toString());
 		
 		
 	}
