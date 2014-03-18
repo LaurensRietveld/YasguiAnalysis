@@ -6,6 +6,7 @@ import org.data2semantics.yasgui.analysis.loaders.AnalysisSetup;
 import org.data2semantics.yasgui.analysis.loaders.DBPediaAnalysis;
 import org.data2semantics.yasgui.analysis.loaders.YasguiAnalysis;
 import org.data2semantics.yasgui.analysis.loaders.YasguiDbpAnalysis;
+import org.data2semantics.yasgui.analysis.loaders.YasguiNotDbpAnalysis;
 
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
