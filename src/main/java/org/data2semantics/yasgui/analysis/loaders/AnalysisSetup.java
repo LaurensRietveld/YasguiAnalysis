@@ -10,11 +10,15 @@ import org.data2semantics.yasgui.analysis.filters.EndpointFilter;
 
 public abstract class AnalysisSetup {
 	public static enum Input {
-		
+		YASGUI_DBPEDIA("input/yasgui_dbpedia.csv", null, 1, 0, 2),
+		YASGUI_LGD("input/yasgui_lgd.csv", null, 1, 0, 2),
 		YASGUI_NEW("input/yasgui_queries_new.csv", null, 0, 1, 2),
 		YASGUI_OLD("input/yasgui_queries_old.csv", null, 1, 1, 2),
 //		DBP_QUERIES("input/dbp.log", "cache/dbp.cache", -1, -1, -1),
 		DBP_QUERIES("input/dbp.55.log", "cache/dbp.cache", -1, -1, -1),
+		USEWOD2014_DBP("input/usewod2014/dbpedia.log", "cache/usewod2014.dbp.cache", -1, -1, -1),
+		USEWOD2014_BIOPORTAL("input/usewod2014/bioportal.sparql", "cache/usewod2014.bioportal.cache", -1, -1, -1),
+		USEWOD2014_LGD("input/usewod2014/lgd.log", "cache/usewod2014.lgd.cache", -1, -1, -1),
 		DBP_SNORQL_QUERIES("input/dbp.log", "cache/dbpSnorql.cache", -1, -1, -1);
 		
 		private int endpointCol = 0;

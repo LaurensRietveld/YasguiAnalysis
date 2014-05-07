@@ -3,13 +3,10 @@ package org.data2semantics.yasgui.analysis;
 import java.io.IOException;
 
 import org.data2semantics.yasgui.analysis.loaders.AnalysisSetup;
-import org.data2semantics.yasgui.analysis.loaders.DBPediaAnalysis;
+import org.data2semantics.yasgui.analysis.loaders.Usewod2014DbpediaAnalysis;
 import org.data2semantics.yasgui.analysis.loaders.YasguiAnalysis;
 import org.data2semantics.yasgui.analysis.loaders.YasguiDbpAnalysis;
-import org.data2semantics.yasgui.analysis.loaders.YasguiNotDbpAnalysis;
-
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
+import org.data2semantics.yasgui.analysis.loaders.YasguiLgdAnalysis;
 
 public class Analysis {
 	Collection collection;
@@ -34,15 +31,16 @@ public class Analysis {
 	public void runAllAnalysis() throws IOException, Exception {
 		runAnalysis(new YasguiAnalysis());
 //		runAnalysis(new YasguiDbpAnalysis());
-//		runAnalysis(new DBPediaAnalysis());
+//		runAnalysis(new YasguiLgdAnalysis());
+//		runAnalysis(new Usewod2014DbpediaAnalysis());
 	}
 	
 
 	
 	public static void main(String[] args) throws Exception {
-		boolean bypassCache = false;
+		boolean bypassCache = true;
 		boolean runOptionalOptimizationTest = false;
-		boolean runCoverageAnalysis = true;
+		boolean runCoverageAnalysis = false;
 		
 		
 //		if (args.length > 0) {

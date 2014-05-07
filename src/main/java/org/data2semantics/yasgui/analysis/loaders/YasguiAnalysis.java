@@ -10,6 +10,7 @@ public class YasguiAnalysis extends AnalysisSetup {
 		this.name = "YASGUI";
 		
 		this.inputTypes = new Input[]{AnalysisSetup.Input.YASGUI_NEW, AnalysisSetup.Input.YASGUI_OLD};
+//		this.inputTypes = new Input[]{AnalysisSetup.Input.YASGUI_NEW};
 		this.loader = new CsvLoader(this);
 		createDirs();
 	}

@@ -64,25 +64,30 @@ public class DbpLoader extends Loader {
 					System.out.println(Integer.toString(linePercentages.indexOf(lineNumber) + 1) + "%");
 				}
 				lineNumber++;
-				String matchSubString = "/sparql?query=";
+				String matchSubString = "/sparql";
 				if (line.contains(matchSubString)) {
 					
 					int startIndex = line.indexOf(matchSubString);
 					startIndex += matchSubString.length();
 					String firstString = line.substring(startIndex);
-					String encodedUrlQuery = firstString.split(" ")[0];
+					String encodedUrlQuery = firstString.split(" ")[0].substring(1); //remove '?' from url query
 					// remove other args
-					String encodedSparqlQuery = encodedUrlQuery.split("&")[0];
-					try {
-						String queryString = URLDecoder.decode(encodedSparqlQuery, "UTF-8");
-						boolean success = addQueryToList(queryString);
-						if (success) { //i.e. it was added
-							cacheWriter.write(URLEncoder.encode(queryString, "UTF-8") + "\n");
+					String[] queryParams = encodedUrlQuery.split("&");
+					for (String queryParam: queryParams) {
+						if (queryParam.startsWith("query")) {
+							try {
+								String queryString = URLDecoder.decode(queryParam.substring("query=".length()), "UTF-8");
+								boolean success = addQueryToList(queryString);
+								if (success) { //i.e. it was added
+									cacheWriter.write(URLEncoder.encode(queryString, "UTF-8") + "\n");
+								}
+							} catch (IllegalArgumentException e) {
+								//in very rare cases, the query might contain illegal hex chars in escape pattern
+								//causing decode to go wrong
+								continue;
+							}
 						}
-					} catch (IllegalArgumentException e) {
-						//in very rare cases, the query might contain illegal hex chars in escape pattern
-						//causing decode to go wrong
-						continue;
+							
 					}
 					
 				}

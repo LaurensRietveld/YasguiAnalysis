@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
+import org.apache.commons.csv.CSVRecord;
 import org.data2semantics.yasgui.analysis.Collection;
 import org.data2semantics.yasgui.analysis.Query;
 import org.data2semantics.query.filters.QueryFilter;
@@ -99,8 +100,11 @@ public abstract class Loader {
 		return query;
 	}
 	
-	protected boolean validColumn(String[] line, int column) {
-		return (column >= 0 && column < line.length);
+	protected boolean validColumn(CSVRecord line, int column) {
+		return (column >= 0 && column < line.size());
 	}
+//	protected boolean validColumn(String[] line, int column) {
+//		return (column >= 0 && column < line.length);
+//	}
 
 }
