@@ -43,9 +43,12 @@ public class Analysis {
 	    if (args.length > 0) {
 	        if (args.length <= 1) {
 	            System.err.println("Need arguments: a name, and a list of endpoints to filter for");
+	            System.exit(1);
 	        }
 	        String name = args[0];
 	        String[] endpointsFilter = Arrays.copyOfRange(args, 1, args.length - 1 );
+	        System.out.println("Storing results in " + name + ", and filtering for endpoints " + Arrays.toString(endpointsFilter));
+	        analysis.runAnalysis(new YasguiEndpointFilterAnalysis(name, endpointsFilter));
 	    } else {
 	        analysis.runAllAnalysis();
 	    }
