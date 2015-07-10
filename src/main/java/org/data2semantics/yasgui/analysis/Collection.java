@@ -224,7 +224,8 @@ public class Collection {
 			 */
 			for (String prefixUri: query.getPrefixMapping().getNsPrefixMap().values()) {
 				if (!totalPrefixOccurances.containsKey(prefixUri)) totalPrefixOccurances.put(prefixUri, 0);
-				totalPrefixOccurances.put(prefixUri, totalPrefixOccurances.get(prefixUri) + 1);
+				//don't use distinct queries here!
+				totalPrefixOccurances.put(prefixUri, totalPrefixOccurances.get(prefixUri) + query.getCount());
 			}
 		}
 		

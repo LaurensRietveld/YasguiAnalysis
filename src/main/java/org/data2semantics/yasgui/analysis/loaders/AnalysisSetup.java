@@ -46,6 +46,10 @@ public abstract class AnalysisSetup {
 	protected ArrayList<EndpointFilter> endpointFilters = new ArrayList<EndpointFilter>();
 	protected String name;
 	
+	public AnalysisSetup(String name, String[] endpointsToFilter) throws IOException {
+	    
+    }
+	
 	public AnalysisSetup() throws IOException {
 	}
 	public ArrayList<QueryFilter> getQueryFilters() {

@@ -34,21 +34,15 @@ public class CsvLoader extends Loader {
 		//therefore, load the csv in php first (which has -proper- loading of csvs), store these via php to file (which stores them with slashes instead of quotes as escape chars)
 		//now, we can finally load them using the opencsv reader (with delimiter set to slash)
 		CSVReader csvReader = new CSVReader(new FileReader(inputType.getInputPath()), ',', '"', '\\',0); 
-//		CSVReader csvReader= new CSVReader(new InputStreamReader(new FileInputStream(inputType.getInputPath()), "utf8"), ',', '"', 0);
 		Reader in = new FileReader(inputType.getInputPath());
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		
-		
-//		String[] line;
 		boolean useMetaRow = inputType.getEndpointCol() == inputType.getQueryCol();
 		boolean lineRead = false;
 		int errorCount = 0;
 		int lineCount = 0;
-		int invalidQueryCount = 0;
+		int totalQueryCount = 0;
 		for (CSVRecord line : records) {
-			
-//		}
-//		while ((line = csvReader.readNext()) != null) {
 			lineCount++;
 			try {
 				lineRead = true;
@@ -71,8 +65,10 @@ public class CsvLoader extends Loader {
 					if (line.get(inputType.getQueryCol()).toLowerCase().contains("insert")) {
 						lineRead = true;
 					}
-					Query query = getParsedAndFilteredQuery(line.get(inputType.getQueryCol()));
 					int count = Integer.parseInt(line.get(inputType.getCountCol()));
+					totalQueryCount += count;
+					Query query = getParsedAndFilteredQuery(line.get(inputType.getQueryCol()), count);
+					
 					if (query != null) {
 						if (count <= 0) {
 							throw new IOException("count cannot be zero");
@@ -80,8 +76,6 @@ public class CsvLoader extends Loader {
 						query.setCount(count);
 						if (endpoint != null) query.setEndpoints(endpoint);
 						collection.getQueryCollection().addQuery(query);
-					} else {
-						invalidQueryCount += count;
 					}
 				}
 			} catch (NumberFormatException e) {
@@ -92,9 +86,18 @@ public class CsvLoader extends Loader {
 //				System.out.println("---");
 			}
 		}
-		System.out.println("walked through " + lineCount + " lines");
+		System.out.println("walked through " + lineCount + " unique lines");
 		System.out.println("opencsv could not parse " + errorCount + " rows");
-		System.out.println("jena could not parse " + invalidQueryCount + " queries");
+//		System.out.println("jena could not parse " + invalidQueryCount + " queries (or " + collection.getQueryCollection().invalidQueries.getVal() + "?)");
+//		System.out.println("queries skipped containing comments (incl dups) " + collection.getQueryCollection().queriesWithComment.getVal());
+		System.out.println("valid unique queries: " + collection.getQueryCollection().getDistinctQueryCount());
+		System.out.println();
+		System.out.println("total numbers:");
+		System.out.println("\tTotal: " + totalQueryCount);
+		System.out.println("\tFiltered queries: " + collection.getQueryCollection().filteredQueries.getVal());
+		System.out.println("\tValid: " + collection.getQueryCollection().getTotalQueryCount());
+		System.out.println("\tInvalid: " + collection.getQueryCollection().invalidQueries.getVal());
+		System.out.println("\tCommented: " + collection.getQueryCollection().queriesWithComment.getVal());
 		csvReader.close();
 		if (!lineRead) throw new IllegalStateException("could not read any file for ");
 		if (collection.getQueryCollection().getQueries().size() == 0) throw new IllegalStateException("could read any queries from file");

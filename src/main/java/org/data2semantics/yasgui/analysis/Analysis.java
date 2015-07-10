@@ -1,12 +1,9 @@
 package org.data2semantics.yasgui.analysis;
 
 import java.io.IOException;
+import java.util.Arrays;
 
-import org.data2semantics.yasgui.analysis.loaders.AnalysisSetup;
-import org.data2semantics.yasgui.analysis.loaders.Usewod2014DbpediaAnalysis;
-import org.data2semantics.yasgui.analysis.loaders.YasguiAnalysis;
-import org.data2semantics.yasgui.analysis.loaders.YasguiDbpAnalysis;
-import org.data2semantics.yasgui.analysis.loaders.YasguiLgdAnalysis;
+import org.data2semantics.yasgui.analysis.loaders.*;
 
 public class Analysis {
 	Collection collection;
@@ -29,8 +26,8 @@ public class Analysis {
 	}
 	
 	public void runAllAnalysis() throws IOException, Exception {
-		runAnalysis(new YasguiAnalysis());
-//		runAnalysis(new YasguiDbpAnalysis());
+//		runAnalysis(new YasguiAnalysis());
+		runAnalysis(new YasguiDbpAnalysis());
 //		runAnalysis(new YasguiLgdAnalysis());
 //		runAnalysis(new Usewod2014DbpediaAnalysis());
 	}
@@ -38,16 +35,28 @@ public class Analysis {
 
 	
 	public static void main(String[] args) throws Exception {
-		boolean bypassCache = true;
-		boolean runOptionalOptimizationTest = false;
-		boolean runCoverageAnalysis = false;
+	    boolean bypassCache = false;
+        boolean runOptionalOptimizationTest = true;
+        boolean runCoverageAnalysis = true;
+        
+        Analysis analysis = new Analysis(bypassCache, runOptionalOptimizationTest, runCoverageAnalysis);
+	    if (args.length > 0) {
+	        if (args.length <= 1) {
+	            System.err.println("Need arguments: a name, and a list of endpoints to filter for");
+	        }
+	        String name = args[0];
+	        String[] endpointsFilter = Arrays.copyOfRange(args, 1, args.length - 1 );
+	    } else {
+	        analysis.runAllAnalysis();
+	    }
+		
 		
 		
 //		if (args.length > 0) {
 //			System.out.println("expensive");
 //			runOptionalOptimizationTest = true;
 //		}
-		Analysis analysis = new Analysis(bypassCache, runOptionalOptimizationTest, runCoverageAnalysis);
+		
 		
 		analysis.runAllAnalysis();
 	}

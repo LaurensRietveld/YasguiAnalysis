@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.csv.CSVRecord;
 import org.data2semantics.yasgui.analysis.Collection;
@@ -12,6 +13,7 @@ import org.data2semantics.query.filters.QueryFilter;
 import org.data2semantics.yasgui.analysis.filters.EndpointFilter;
 
 import com.hp.hpl.jena.query.QueryBuildException;
+import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.query.QueryParseException;
 import com.hp.hpl.jena.sparql.expr.ExprException;
 
@@ -44,14 +46,14 @@ public abstract class Loader {
 	public Collection getCollection() {
 		return this.collection;
 	}
-	protected boolean checkQueryFilters(Query query) {
+	protected boolean checkQueryFilters(Query query, int queryCount) {
 		boolean passed = true;
 		if (queryFilters != null) {
 			try {
 				for (QueryFilter filter : queryFilters) {
 					if (filter.filter(query)) {
 						passed = false;
-						collection.getQueryCollection().filteredQueries.increase();
+						collection.getQueryCollection().filteredQueries.add(queryCount);
 						break;
 					}
 				}
@@ -77,26 +79,39 @@ public abstract class Loader {
 		return passed;
 	}
 	protected Query getParsedAndFilteredQuery(String queryString) {
+	    return getParsedAndFilteredQuery(queryString, 1);
+	}
+	
+	protected Query getParsedAndFilteredQuery(String queryString, int queryCount) {
 		Query query = null;
 		try {
 			query = Query.create(queryString, collection.getQueryCollection());
 		} catch (QueryParseException e){
 			//unable to parse query. invalid!
-			collection.getQueryCollection().invalidQueries.increase();
+			
 //			String testString = queryString.replace("#>", "");
-//			if (testString.contains("#")) System.out.println(queryString);
+			if (queryString.contains("#")) {
+			    collection.getQueryCollection().queriesWithComment.add(queryCount);
+			} else {
+			    collection.getQueryCollection().invalidQueries.add(queryCount);
+			}
 		} catch (QueryBuildException e) {
 			//e.g. 'duplicate variable in result projection'
-			collection.getQueryCollection().invalidQueries.increase();
+			collection.getQueryCollection().invalidQueries.add(queryCount);
 		} catch (ExprException e){
 			//unable to parse regex in query. invalid!
-			collection.getQueryCollection().invalidQueries.increase();
+			collection.getQueryCollection().invalidQueries.add(queryCount);
+		} catch (PatternSyntaxException e){
+		    //unable to parse regex in query. invalid!
+		    collection.getQueryCollection().invalidQueries.add(queryCount);
+		} catch (QueryException e){
+		    collection.getQueryCollection().invalidQueries.add(queryCount);
 		} catch (Exception e) {
 			System.out.println("failed to parse query string: " + queryString);
 			e.printStackTrace();
 			System.exit(1);
 		}
-		if (query != null && !checkQueryFilters(query)) query = null;
+		if (query != null && !checkQueryFilters(query, queryCount)) query = null;
 		return query;
 	}
 	
