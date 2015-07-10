@@ -93,13 +93,17 @@ public class AccessibilityStats  {
 		
 		cacheFile = new File("cache/endpoint_accessiblity_" + name + ".tmp");
 		if (cacheFile.exists()) {
+		    System.out.println("reusing accessibility cache file");
 			loadCacheFile();
 		} else {
+		    System.out.println("creating new accessibility cache file");
 			cacheFile.createNewFile();
 			cacheFileWriter = new FileWriter(cacheFile);
 			
 			for (Entry<String, Integer> entry : endpointCollection.getEndpoints().entrySet()) {
 			    String endpoint = entry.getKey();
+//			    System.out.println(endpoint);
+//			    System.exit(1);
 			    Integer count = entry.getValue();
 			    checkAccessibility(endpoint, count.intValue());
 			}

@@ -129,8 +129,6 @@ public class QueryCollection<E extends Query> extends org.data2semantics.query.Q
 	}
 	private void calcOptionalOptimizationStats() throws IOException {
 		System.out.println("calculating optional optimization stats");
-		
-		System.out.println("querying ops live!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		int needOptionalCount = 0;
 		int checkOptionalCount = 0;
 		for (E query: queries.values()) {
@@ -147,14 +145,17 @@ public class QueryCollection<E extends Query> extends org.data2semantics.query.Q
 			
 			
 			if (endpoint != null) {
+//			    System.out.println(endpoint);
+//			    System.exit(1);
 				if (query.isSelectType() && query.hasOptionals()) {
 					try {
 						//execute the query, and see whether the number of bindings differ between query solutions. 
 						//If they dont, then we wouldnt need the optionals!
 						
-						endpoint = "http://ops.few.vu.nl:8890/sparql";
+//						endpoint = "http://ops.few.vu.nl:8890/sparql";
 						
-						QueryExecution queryExecution = QueryExecutionFactory.sparqlService(endpoint, query.getQueryWithFromClause("http://dbpedia"));
+//						QueryExecution queryExecution = QueryExecutionFactory.sparqlService(endpoint, query.getQueryWithFromClause("http://dbpedia"));
+						QueryExecution queryExecution = QueryExecutionFactory.sparqlService(endpoint, query);
 						ResultSet result = queryExecution.execSelect();
 						List<String> vars = result.getResultVars();
 						Integer previousNumBindings = null;

@@ -35,8 +35,20 @@ public class Analysis {
 
 	
 	public static void main(String[] args) throws Exception {
+//	    args = new String[]{ "yasguiFinto", "http://api.dev.finto.fi/sparql"};//falls over
+//	    args = new String[]{ "xdams", "http://lod.xdams.org/sparql"};//done
+	    args = new String[]{ "kirjasampo", "http://sparql.vocab.at/kirjasampo/sparql"};
+	    args = new String[]{ "disgenet", "http://rdf.disgenet.org/sparql/"};
+	    args = new String[]{ "frdbpedia", "http://fr.dbpedia.org/sparql"};
+	    args = new String[]{ "musicbrainz", "http://dbtune.org/musicbrainz/sparql"};
+	    args = new String[]{ "saam", "http://edan.si.edu/saam/sparql"};
+	    args = new String[]{ "risis", "http://risis.data2semantics.ops.few.vu.nl/sparql"};
+	    args = new String[]{ "lgd", "http://linkedgeodata.org/sparql/", "http://linkedgeodata.org/sparql"};
+	    args = new String[]{ "lmdb", "http://data.linkedmdb.org/sparql", "http://www.linkedmdb.org/sparql"};
+	    args = new String[]{ "dbpedia", "http://live.dbpedia.org", "http://dbpedia.org/sparql"};
+	    
 	    boolean bypassCache = false;
-        boolean runOptionalOptimizationTest = true;
+        boolean runOptionalOptimizationTest = false;
         boolean runCoverageAnalysis = true;
         
         Analysis analysis = new Analysis(bypassCache, runOptionalOptimizationTest, runCoverageAnalysis);
@@ -46,7 +58,7 @@ public class Analysis {
 	            System.exit(1);
 	        }
 	        String name = args[0];
-	        String[] endpointsFilter = Arrays.copyOfRange(args, 1, args.length - 1 );
+	        String[] endpointsFilter = Arrays.copyOfRange(args, 1, args.length );
 	        System.out.println("Storing results in " + name + ", and filtering for endpoints " + Arrays.toString(endpointsFilter));
 	        analysis.runAnalysis(new YasguiEndpointFilterAnalysis(name, endpointsFilter));
 	    } else {
@@ -61,6 +73,6 @@ public class Analysis {
 //		}
 		
 		
-		analysis.runAllAnalysis();
+//		analysis.runAllAnalysis();
 	}
 }

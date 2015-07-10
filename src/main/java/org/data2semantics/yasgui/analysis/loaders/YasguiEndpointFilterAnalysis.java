@@ -19,8 +19,7 @@ public class YasguiEndpointFilterAnalysis extends AnalysisSetup {
             for (String filter: filters) {
                 if (!match) match = endpoint.equals(filter);
             }
-            return match;
-//            return !endpoint.equals("http://dbpedia.org/sparql") && !endpoint.equals("http://live.dbpedia.org/sparql");
+            return !match;
         }
     }
     
