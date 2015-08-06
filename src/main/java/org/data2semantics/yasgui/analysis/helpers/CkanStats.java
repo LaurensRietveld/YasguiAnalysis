@@ -5,11 +5,10 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import org.data2semantics.yasgui.analysis.EndpointCollection;
-
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
 public class CkanStats  {
 	
@@ -76,7 +75,7 @@ public class CkanStats  {
 	 * @return
 	 */
 	private HashMap<String, Integer> getCkanEndpoints() {
-		com.hp.hpl.jena.query.Query query = QueryFactory.create(getCkanQuery());
+		org.apache.jena.query.Query query = QueryFactory.create(getCkanQuery());
 		QueryEngineHTTP queryExecution = new QueryEngineHTTP("http://semantic.ckan.net/sparql", query);
 		HashMap<String, Integer> endpoints = new HashMap<String, Integer>();
 		ResultSet resultSet = queryExecution.execSelect();

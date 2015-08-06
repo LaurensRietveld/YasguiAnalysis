@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 import org.data2semantics.query.QueryCollection;
 import org.data2semantics.query.Query;
-import com.hp.hpl.jena.sparql.expr.Expr;
-import com.hp.hpl.jena.sparql.expr.ExprFunction;
-import com.hp.hpl.jena.sparql.syntax.ElementFilter;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprFunction;
+import org.apache.jena.sparql.syntax.ElementFilter;
 
 public class Filter {
 	int maxdepth=0;

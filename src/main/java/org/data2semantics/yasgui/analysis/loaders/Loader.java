@@ -12,10 +12,10 @@ import org.data2semantics.yasgui.analysis.Query;
 import org.data2semantics.query.filters.QueryFilter;
 import org.data2semantics.yasgui.analysis.filters.EndpointFilter;
 
-import com.hp.hpl.jena.query.QueryBuildException;
-import com.hp.hpl.jena.query.QueryException;
-import com.hp.hpl.jena.query.QueryParseException;
-import com.hp.hpl.jena.sparql.expr.ExprException;
+import org.apache.jena.query.QueryBuildException;
+import org.apache.jena.query.QueryException;
+import org.apache.jena.query.QueryParseException;
+import org.apache.jena.sparql.expr.ExprException;
 
 
 public abstract class Loader {

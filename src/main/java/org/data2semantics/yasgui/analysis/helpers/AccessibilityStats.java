@@ -12,14 +12,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import org.data2semantics.yasgui.analysis.Collection;
 import org.data2semantics.yasgui.analysis.EndpointCollection;
 import org.data2semantics.yasgui.analysis.Query;
 
 import au.com.bytecode.opencsv.CSVReader;
-
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.sparql.engine.http.QueryEngineHTTP;
 
 public class AccessibilityStats  {
 	public enum EndpointAccessiblityStatus{
@@ -160,7 +159,7 @@ public class AccessibilityStats  {
 	public boolean checkAccessibility(String endpoint, int count) throws UnknownHostException, IOException {
 		boolean accessible = false;
 		try {
-			com.hp.hpl.jena.query.Query query = QueryFactory.create("SELECT DISTINCT * { ?x ?y ?z} LIMIT 1");
+			org.apache.jena.query.Query query = QueryFactory.create("SELECT DISTINCT * { ?x ?y ?z} LIMIT 1");
 			QueryEngineHTTP queryExecution = new QueryEngineHTTP(endpoint, query);
 			queryExecution.setTimeout(5000, 5000);
 			queryExecution.execSelect();

@@ -6,23 +6,19 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.jena.atlas.web.HttpException;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.Syntax;
+import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.syntax.Element;
+import org.apache.jena.sparql.syntax.ElementPathBlock;
+import org.apache.jena.sparql.syntax.ElementVisitorBase;
+import org.apache.jena.sparql.syntax.ElementWalker;
+import org.apache.jena.sparql.syntax.Template;
 import org.data2semantics.query.QueryCollection;
-
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.Syntax;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.sparql.core.BasicPattern;
-import com.hp.hpl.jena.sparql.core.TriplePath;
-import com.hp.hpl.jena.sparql.syntax.Element;
-import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
-import com.hp.hpl.jena.sparql.syntax.ElementVisitorBase;
-import com.hp.hpl.jena.sparql.syntax.ElementWalker;
-import com.hp.hpl.jena.sparql.syntax.Template;
 
 
 public class Query extends org.data2semantics.query.Query {
@@ -58,7 +54,11 @@ public class Query extends org.data2semantics.query.Query {
 				}
 			}
 		});
+
+            
 		constructQuery.setConstructTemplate(new Template(constructBp));
+	     //set base uri to something. If no base uri is set, and there are relative uris, query throws exception (which I cannot catch.. (separate thread)).
+        if ( constructQuery.getBaseURI() == null ) constructQuery.setBaseURI("http://blaaaaaaat");
 		return constructQuery;
 	}
 
@@ -66,13 +66,16 @@ public class Query extends org.data2semantics.query.Query {
 		Set<String> triples = new HashSet<String>();
 		try {
 			Query query = getAsConstructQuery();
+//			query.setBaseURI("http://bla");
+//			System.out.println(query.toString());
 			QueryExecution queryExecution = QueryExecutionFactory.sparqlService(endpoint, query);
-			queryExecution.setTimeout(5, TimeUnit.MINUTES);
+//			queryExecution.
+			queryExecution.setTimeout(3, TimeUnit.MINUTES, 3, TimeUnit.MINUTES);
 			Iterator<Triple> constructResult = queryExecution.execConstructTriples();
 			while (constructResult.hasNext()) {
 				triples.add(constructResult.next().toString());
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			System.out.print("e");
 //			System.out.println(e.getClass().getName());
 //			System.out.println(e.getMessage());
@@ -81,7 +84,17 @@ public class Query extends org.data2semantics.query.Query {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		Query query = Query.create("SELECT * {?x ?yu ?j} LIMIT 10");
+		Query query = Query.create("PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+		        "PREFIX  dbpedia: <http://dbpedia.org/resource/>\n" + 
+		        "PREFIX  owl:  <http://www.w3.org/2002/07/owl#>\n" + 
+		        "PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+		        "\n" + 
+		        "SELECT DISTINCT  ?area ?ans\n" + 
+		        "WHERE\n" + 
+		        "  { ?area ?prop ?ans .\n" + 
+		        "    ?area rdf:type owl:Class\n" + 
+		        "  }\n" + 
+		        "LIMIT   100");
 		System.out.println(query.getUsedTriplesFromConstruct("http://dbpedia.org/sparql").toString());
 	}
 }

@@ -35,23 +35,27 @@ public class Analysis {
 
 	
 	public static void main(String[] args) throws Exception {
+	    boolean bypassCache = false;
+	    boolean runOptionalOptimizationTest = false;
+	    boolean runCoverageAnalysis = true;
+	    
+	    Analysis analysis = new Analysis(bypassCache, runOptionalOptimizationTest, runCoverageAnalysis);
+	    
+	    
 //	    args = new String[]{ "yasguiFinto", "http://api.dev.finto.fi/sparql"};//falls over
 //	    args = new String[]{ "xdams", "http://lod.xdams.org/sparql"};//done
-	    args = new String[]{ "kirjasampo", "http://sparql.vocab.at/kirjasampo/sparql"};
-	    args = new String[]{ "disgenet", "http://rdf.disgenet.org/sparql/"};
-	    args = new String[]{ "frdbpedia", "http://fr.dbpedia.org/sparql"};
-	    args = new String[]{ "musicbrainz", "http://dbtune.org/musicbrainz/sparql"};
-	    args = new String[]{ "saam", "http://edan.si.edu/saam/sparql"};
-	    args = new String[]{ "risis", "http://risis.data2semantics.ops.few.vu.nl/sparql"};
-	    args = new String[]{ "lgd", "http://linkedgeodata.org/sparql/", "http://linkedgeodata.org/sparql"};
-	    args = new String[]{ "lmdb", "http://data.linkedmdb.org/sparql", "http://www.linkedmdb.org/sparql"};
-	    args = new String[]{ "dbpedia", "http://live.dbpedia.org", "http://dbpedia.org/sparql"};
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("kirjasampo", "http://sparql.vocab.at/kirjasampo/sparql"));//crashed
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("disgenet", "http://rdf.disgenet.org/sparql/"));//done
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("frdbpedia", "http://fr.dbpedia.org/sparql"));//done
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("musicbrainz", "http://dbtune.org/musicbrainz/sparql"));//done
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("saam", "http://edan.si.edu/saam/sparql"));//done
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("risis", "http://risis.data2semantics.ops.few.vu.nl/sparql"));//done
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("lgd", "http://linkedgeodata.org/sparql/", "http://linkedgeodata.org/sparql"));//success, but two endpoints get reported separately
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("nldbpedia", "http://nl.dbpedia.org/sparql"));
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("bio2rdf", "http://clinicaltrials.bio2rdf.org/sparql"));//failed
+	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("dbpedia", "http://live.dbpedia.org", "http://dbpedia.org/sparql"));//exception. failed
+	    System.exit(0);
 	    
-	    boolean bypassCache = false;
-        boolean runOptionalOptimizationTest = false;
-        boolean runCoverageAnalysis = true;
-        
-        Analysis analysis = new Analysis(bypassCache, runOptionalOptimizationTest, runCoverageAnalysis);
 	    if (args.length > 0) {
 	        if (args.length <= 1) {
 	            System.err.println("Need arguments: a name, and a list of endpoints to filter for");

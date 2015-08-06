@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats;
 import org.data2semantics.yasgui.analysis.helpers.AccessibilityStats.EndpointAccessiblityStatus;
 
@@ -26,7 +27,7 @@ public class EndpointCollection {
 	private HashMap<String, Integer> endpoints = new HashMap<String, Integer>();
 	private HashMap<String, Integer> endpointTriplesUsed = null;
 	private AccessibilityStats accessibilityStats;
-	
+	public Set<String> triplesUsedInEndpoints = new HashSet<String>() ;
 	public EndpointCollection(Collection collection) {
 		accessibilityStats = new AccessibilityStats(this, collection);
 	}
@@ -143,6 +144,8 @@ public class EndpointCollection {
 			String endpoint = entry.getKey();
 			writeElaborareStatsRow(writer, endpoint, entry.getValue());
 		}
+		//write total triples used for combinations of endpoints
+		writer.writeNext(new String[]{"total", "", "", (triplesUsedInEndpoints == null? "n/a": Integer.toString(triplesUsedInEndpoints.size()))});
 		
 		writer.close();
 	}
@@ -190,11 +193,18 @@ public class EndpointCollection {
 			int queryCount = 0;
 			Set<String> triplesUsedInEndpoint = new HashSet<String>();
 			for (Query query: collection.getQueryCollection().getQueries(endpoint)) {
+			    FileUtils.writeStringToFile(new File("lastQueryProcessed.sparql"), query.toString(), "UTF-8", false);
 				queryCount++;
 				System.out.println("query: " + queryCount + "/" + totalQueryCount);
 				triplesUsedInEndpoint.addAll(query.getUsedTriplesFromConstruct(endpoint));
 			}
 			endpointTriplesUsed.put(endpoint, triplesUsedInEndpoint.size());
+			triplesUsedInEndpoints.addAll(triplesUsedInEndpoint);
+//			if (triplesUsedInEndpoints == null) {
+//			    triplesUsedInEndpoints = triplesUsedInEndpoint;
+//			} else {
+//			    triplesUsedInEndpoints.addAll(triplesUsedInEndpoint);
+//			}
 		}
 	}
 }

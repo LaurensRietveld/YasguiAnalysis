@@ -16,11 +16,11 @@ import org.data2semantics.yasgui.query.helpers.Counter;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.sparql.engine.http.QueryExceptionHTTP;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.sparql.engine.http.QueryExceptionHTTP;
 
 public class QueryCollection<E extends Query> extends org.data2semantics.query.QueryCollection<E> {
 	private Collection collection;
