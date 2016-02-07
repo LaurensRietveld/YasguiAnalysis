@@ -26,8 +26,8 @@ public class Analysis {
 	}
 	
 	public void runAllAnalysis() throws IOException, Exception {
-//		runAnalysis(new YasguiAnalysis());
-		runAnalysis(new YasguiDbpAnalysis());
+		runAnalysis(new YasguiAnalysis());
+//		runAnalysis(new YasguiDbpAnalysis());
 //		runAnalysis(new YasguiLgdAnalysis());
 //		runAnalysis(new Usewod2014DbpediaAnalysis());
 	}
@@ -35,13 +35,12 @@ public class Analysis {
 
 	
 	public static void main(String[] args) throws Exception {
-	    boolean bypassCache = false;
+	    boolean bypassCache = true;
 	    boolean runOptionalOptimizationTest = false;
 	    boolean runCoverageAnalysis = true;
 	    
 	    Analysis analysis = new Analysis(bypassCache, runOptionalOptimizationTest, runCoverageAnalysis);
-	    
-	    
+//	    analysis.runAllAnalysis();
 //	    args = new String[]{ "yasguiFinto", "http://api.dev.finto.fi/sparql"};//falls over
 //	    args = new String[]{ "xdams", "http://lod.xdams.org/sparql"};//done
 //	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("kirjasampo", "http://sparql.vocab.at/kirjasampo/sparql"));//crashed
@@ -53,21 +52,22 @@ public class Analysis {
 //	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("lgd", "http://linkedgeodata.org/sparql/", "http://linkedgeodata.org/sparql"));//success, but two endpoints get reported separately
 //	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("nldbpedia", "http://nl.dbpedia.org/sparql"));
 //	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("bio2rdf", "http://clinicaltrials.bio2rdf.org/sparql"));//failed
-	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("dbpedia", "http://live.dbpedia.org", "http://dbpedia.org/sparql"));//exception. failed
+//	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("dbpedia", "http://live.dbpedia.org", "http://dbpedia.org/sparql"));//exception. failed
+	    analysis.runAnalysis(new YasguiEndpointFilterAnalysis("ctrials", "http://clinicaltrials.bio2rdf.org/sparql"));
 	    System.exit(0);
 	    
-	    if (args.length > 0) {
-	        if (args.length <= 1) {
-	            System.err.println("Need arguments: a name, and a list of endpoints to filter for");
-	            System.exit(1);
-	        }
-	        String name = args[0];
-	        String[] endpointsFilter = Arrays.copyOfRange(args, 1, args.length );
-	        System.out.println("Storing results in " + name + ", and filtering for endpoints " + Arrays.toString(endpointsFilter));
-	        analysis.runAnalysis(new YasguiEndpointFilterAnalysis(name, endpointsFilter));
-	    } else {
-	        analysis.runAllAnalysis();
-	    }
+//	    if (args.length > 0) {
+//	        if (args.length <= 1) {
+//	            System.err.println("Need arguments: a name, and a list of endpoints to filter for");
+//	            System.exit(1);
+//	        }
+//	        String name = args[0];
+//	        String[] endpointsFilter = Arrays.copyOfRange(args, 1, args.length );
+//	        System.out.println("Storing results in " + name + ", and filtering for endpoints " + Arrays.toString(endpointsFilter));
+//	        analysis.runAnalysis(new YasguiEndpointFilterAnalysis(name, endpointsFilter));
+//	    } else {
+//	        analysis.runAllAnalysis();
+//	    }
 		
 		
 		

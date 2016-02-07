@@ -90,11 +90,11 @@ public abstract class Loader {
 			//unable to parse query. invalid!
 			
 //			String testString = queryString.replace("#>", "");
-			if (queryString.contains("#")) {
-			    collection.getQueryCollection().queriesWithComment.add(queryCount);
-			} else {
+//			if (queryString.contains("#")) {
+//			    collection.getQueryCollection().queriesWithComment.add(queryCount);
+//			} else {
 			    collection.getQueryCollection().invalidQueries.add(queryCount);
-			}
+//			}
 		} catch (QueryBuildException e) {
 			//e.g. 'duplicate variable in result projection'
 			collection.getQueryCollection().invalidQueries.add(queryCount);

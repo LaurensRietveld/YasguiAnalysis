@@ -97,7 +97,6 @@ public class CsvLoader extends Loader {
 		System.out.println("\tFiltered queries: " + collection.getQueryCollection().filteredQueries.getVal());
 		System.out.println("\tValid: " + collection.getQueryCollection().getTotalQueryCount());
 		System.out.println("\tInvalid: " + collection.getQueryCollection().invalidQueries.getVal());
-		System.out.println("\tCommented: " + collection.getQueryCollection().queriesWithComment.getVal());
 		csvReader.close();
 		if (!lineRead) throw new IllegalStateException("could not read any file for ");
 		if (collection.getQueryCollection().getQueries().size() == 0) throw new IllegalStateException("could read any queries from file");

@@ -98,7 +98,12 @@ public class Collection {
 				for (Query query: queries) {
 					Map<String, String> prefixMapping = query.getPrefixMapping().getNsPrefixMap();
 					for (String prefixUri: prefixMapping.values()) {
-						URI uri = new URI(prefixUri);
+					    URI uri;
+					    try {
+					        uri = new URI(prefixUri);
+					    } catch (Exception e) {
+					        continue;
+					    }
 					    String domain = uri.getHost();
 					    if (domain == null) continue;
 					    HashMap<String, Integer> endpointForDomain = endpointCollection.getEndpointForDomain(domain);
